@@ -1,0 +1,7 @@
+<svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="44" height="44" rx="12" fill="#0180FF"/>
+  <!-- Interlocking Osusu Flow Loop -->
+  <path d="M13 23C13 16.9249 17.9249 12 24 12C28.4 12 32 15.6 32 20C32 24.4 28.4 28 24 28C21 28 18 26.5 16.5 24" stroke="white" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M31 21C31 27.0751 26.0751 32 20 32C15.6 32 12 28.4 12 24C12 19.6 15.6 16 20 16C23 16 26 17.5 27.5 20" stroke="#10B981" stroke-width="3.2" stroke-linecap="round"/>
+  <circle cx="22" cy="22" r="3.2" fill="white"/>
+</svg>

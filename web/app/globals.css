@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FFFFFF;
+  --foreground: #0F172A;
+
+  /* Monime Brand Palette */
+  --primary: #0180FF;
+  --primary-hover: #0066FF;
+  --primary-active: #0052CC;
+  --primary-light: #EFF6FF;
+
+  --brand-navy: #0B132B;
+  --brand-navy-card: #111A35;
+
+  --agri-green: #10B981;
+  --amber-gold: #F59E0B;
+}
+
+body {
+  background-color: #FAFCFE;
+  color: var(--foreground);
+  font-family: var(--font-sora), 'Sora', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Feature Phone Custom Aesthetics */
+.phone-frame {
+  box-shadow: 0 25px 50px -12px rgba(11, 19, 43, 0.25), 0 0 0 1px rgba(11, 19, 43, 0.08);
+}
+
+.ussd-screen {
+  font-family: "Courier New", Courier, monospace;
+  background-color: #8EBF9B;
+  color: #062211;
+  text-shadow: 0 0 1px rgba(0,0,0,0.25);
+}
+
+/* Subtle fintech grid pattern background */
+.fintech-grid-bg {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(226, 232, 240, 0.4) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(226, 232, 240, 0.4) 1px, transparent 1px);
+}
