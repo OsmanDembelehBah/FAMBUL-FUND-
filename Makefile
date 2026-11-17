@@ -1,4 +1,4 @@
-.PHONY: test test-web test-intelligence test-ussd run-web run-intelligence run-ussd
+.PHONY: test test-web test-intelligence test-ussd run-web run-intelligence run-ussd db-migrate db-seed
 
 test: test-web test-intelligence test-ussd
 	@echo "\n=============================================="
@@ -16,6 +16,14 @@ test-intelligence:
 test-ussd:
 	@echo "🧪 Running Go Test (USSD State Machine, Lockouts & Split Logic)..."
 	cd ussd-gateway && go test -v ./...
+
+db-migrate:
+	@echo "📦 Running PostgreSQL migrations (web/lib/schema.sql)..."
+	cd web && npm run db:migrate
+
+db-seed:
+	@echo "🌱 Running PostgreSQL database seed (web/lib/seed.sql)..."
+	cd web && npm run db:seed
 
 run-web:
 	cd web && npm run dev

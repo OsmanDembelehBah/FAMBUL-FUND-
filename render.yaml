@@ -1,0 +1,59 @@
+# ==============================================================================
+# Fambul Fund - Render Infrastructure Blueprint (render.yaml)
+# Deploys both backend microservices as always-on, high-availability services.
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # 1. USSD & Telecom Payments Gateway (Go)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: fambul-fund-ussd-gateway
+    runtime: docker
+    dockerfilePath: ./ussd-gateway/Dockerfile
+    dockerContext: ./ussd-gateway
+    plan: standard # Always-on (prevents cold boot latency on live USSD dial)
+    region: frankfurt # Closest low-latency European hub to Sierra Leone
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: ENVIRONMENT
+        value: production
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      - key: REDIS_URL
+        sync: false # Connect to Upstash Redis in Render dashboard
+      - key: ORANGE_MONEY_CLIENT_ID
+        sync: false
+      - key: ORANGE_MONEY_CLIENT_SECRET
+        sync: false
+      - key: AFRIMONEY_API_KEY
+        sync: false
+      - key: QMONEY_API_KEY
+        sync: false
+
+  # ----------------------------------------------------------------------------
+  # 2. Farm Credit Intelligence & Satellite Service (Python / FastAPI)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: fambul-fund-intelligence-service
+    runtime: docker
+    dockerfilePath: ./intelligence-service/Dockerfile
+    dockerContext: ./intelligence-service
+    plan: standard # Always-on compute
+    region: frankfurt
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: ENVIRONMENT
+        value: production
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      - key: COPERNICUS_SENTINEL_API_KEY
+        sync: false
+      - key: WEATHER_PARAMETRIC_API_KEY
+        sync: false

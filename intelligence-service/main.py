@@ -4,6 +4,9 @@ Provides transparent credit scoring, loan limit derivation, voice parsing,
 seasonal cash-flow forecasting, liquidity radar, and satellite NDVI assessment.
 """
 
+import os
+import time
+import datetime
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -15,6 +18,11 @@ from liquidity_radar import forecast_liquidity_radar
 from satellite_adapter import assess_plot_ndvi
 from season_forecast import get_seasonal_forecast
 
+start_time = time.time()
+ENVIRONMENT = os.getenv("ENVIRONMENT", os.getenv("NODE_ENV", "production"))
+allowed_origins_raw = os.getenv("ALLOWED_ORIGINS", "*")
+allowed_origins = [o.strip() for o in allowed_origins_raw.split(",") if o.strip()]
+
 app = FastAPI(
     title="Fambul Fund Intelligence Service",
     description="Deterministic credit scoring, voice ledger parsing, and rural liquidity forecasting for Sierra Leone Osusu groups.",
@@ -23,7 +31,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins if allowed_origins else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -59,8 +67,16 @@ def health():
     return {
         "status": "healthy",
         "service": "intelligence-service",
-        "runtime": "Python 3.9 / FastAPI",
+        "environment": ENVIRONMENT,
+        "uptime_sec": int(time.time() - start_time),
+        "runtime": "Python 3.11 / FastAPI",
+        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
     }
+
+
+@app.get("/healthz")
+def healthz():
+    return health()
 
 
 @app.post("/score/group")

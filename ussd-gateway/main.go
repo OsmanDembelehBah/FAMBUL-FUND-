@@ -12,10 +12,26 @@ import (
 	"github.com/fambulfund/ussd-gateway/ussd"
 )
 
+var startTime = time.Now()
+
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
+	}
+
+	env := os.Getenv("ENVIRONMENT")
+	if env == "" {
+		env = os.Getenv("NODE_ENV")
+	}
+	if env == "" {
+		env = "production"
+	}
+
+	redisURL := os.Getenv("REDIS_URL")
+	allowedOrigins := os.Getenv("ALLOWED_ORIGINS")
+	if allowedOrigins == "" {
+		allowedOrigins = "*"
 	}
 
 	sessionStore := ussd.NewMemorySessionStore(90 * time.Second)
@@ -26,10 +42,10 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	// Enable CORS wrapper
+	// CORS middleware
 	withCORS := func(h http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Origin", allowedOrigins)
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
 			if r.Method == http.MethodOptions {
@@ -40,17 +56,29 @@ func main() {
 		}
 	}
 
+	// USSD Telephony Webhook
 	mux.HandleFunc("/ussd/callback", withCORS(ussdHandler.ServeHTTP))
 
-	mux.HandleFunc("/health", withCORS(func(w http.ResponseWriter, r *http.Request) {
+	// Health Check Endpoints
+	healthHandler := withCORS(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+		redisStatus := "in-memory-active"
+		if redisURL != "" {
+			redisStatus = "configured"
+		}
 		_ = json.NewEncoder(w).Encode(map[string]interface{}{
-			"status":    "healthy",
-			"service":   "ussd-and-payments-gateway",
-			"timestamp": time.Now().UTC(),
+			"status":       "healthy",
+			"service":      "ussd-gateway",
+			"environment":  env,
+			"uptime_sec":   int(time.Since(startTime).Seconds()),
+			"redis_status": redisStatus,
+			"timestamp":    time.Now().UTC().Format(time.RFC3339),
 		})
-	}))
+	})
+	mux.HandleFunc("/health", healthHandler)
+	mux.HandleFunc("/healthz", healthHandler)
 
+	// SMS Outbox Inspection
 	mux.HandleFunc("/sms/outbox", withCORS(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		msgs := smsAdapter.GetRecentMessages(20)
@@ -60,6 +88,7 @@ func main() {
 		})
 	}))
 
+	// Payout Rail Batch Endpoint
 	mux.HandleFunc("/payments/payout", withCORS(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
@@ -78,7 +107,7 @@ func main() {
 	}))
 
 	addr := fmt.Sprintf(":%s", port)
-	log.Printf("🚀 Fambul Fund USSD & Payments Gateway running on http://localhost%s\n", addr)
+	log.Printf("🚀 Fambul Fund USSD Gateway listening on port %s [env=%s]\n", port, env)
 	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}
