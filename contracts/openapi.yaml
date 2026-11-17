@@ -1,0 +1,158 @@
+openapi: 3.1.0
+info:
+  title: Fambul Fund Core API Specification
+  description: Shared polyglot contract for Next.js BFF, Python Intelligence Service, and Go USSD Gateway.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+    description: Next.js BFF
+  - url: http://localhost:8000
+    description: Python Intelligence Service
+  - url: http://localhost:8080
+    description: Go USSD & Payments Gateway
+paths:
+  /ussd/callback:
+    post:
+      summary: Telecom Aggregator USSD Webhook
+      description: Handles session turns from Africa's Talking / Hubtel / standard aggregator.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                sessionId:
+                  type: string
+                phoneNumber:
+                  type: string
+                text:
+                  type: string
+                serviceCode:
+                  type: string
+          application/json:
+            schema:
+              type: object
+              properties:
+                sessionId:
+                  type: string
+                phoneNumber:
+                  type: string
+                text:
+                  type: string
+                serviceCode:
+                  type: string
+      responses:
+        '200':
+          description: CON or END string response bounded by 160 characters.
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /score/group:
+    post:
+      summary: Calculate Osusu Group Credit Score
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - contribution_consistency
+                - repayment_history
+                - sales_regularity
+                - group_tenure
+                - ledger_completeness
+              properties:
+                contribution_consistency:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                repayment_history:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                sales_regularity:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                group_tenure:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                ledger_completeness:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+      responses:
+        '200':
+          description: Weighted score calculation and tier breakdown.
+
+  /score/loan-limit:
+    post:
+      summary: Recommended Loan Limit Derivation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - score
+                - avg_seasonal_net_income
+                - group_savings_pool
+              properties:
+                score:
+                  type: number
+                avg_seasonal_net_income:
+                  type: number
+                group_savings_pool:
+                  type: number
+      responses:
+        '200':
+          description: Loan limit adhering to 15% rate ceiling.
+
+  /voice/parse:
+    post:
+      summary: Voice Note Natural Language Extraction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - transcription
+              properties:
+                transcription:
+                  type: string
+      responses:
+        '200':
+          description: Candidate ledger entry requiring farmer confirmation.
+
+  /forecast/liquidity-radar:
+    get:
+      summary: Payout-Day Rural Agent Liquidity Forecast
+      responses:
+        '200':
+          description: Cash float forecasts and shortfall alerts by rural node.
+
+  /payments/payout:
+    post:
+      summary: Execute Batch Harvest Payouts with 4-Way Split
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lines:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        '200':
+          description: Executed payout lines with provider transaction references.

@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+*/node_modules/
+venv/
+*/venv/
+.venv/
+*/.venv/
+
+# Next.js build output
+.next/
+*/.next/
+out/
+*/out/
+
+# Python cache
+__pycache__/
+*/__pycache__/
+*.pyc
+.pytest_cache/
+*/.pytest_cache/
+
+# Go build artifacts
+ussd-gateway/bin/
+*.exe
+*.test
+
+# Environment variables
+.env.local
+.env.*.local
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
